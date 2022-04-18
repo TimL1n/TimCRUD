@@ -20,15 +20,11 @@ app_crud = Blueprint('crud', __name__,
 
 # Default URL for Blueprint
 @app_crud.route('/')
+@login_required  # Flask-Login uses this decorator to restrict acess to logged in users
 def crud():
     """obtains all Users from table and loads Admin Form"""
     return render_template("crud.html", table=users_all())
 
-@app_crud.route('/search/')
-@login_required  # Flask-Login uses this decorator to restrict acess to logged in users
-def search():
-    """obtains all Users from table and loads Admin Form"""
-    return render_template("login.html", table=users_all())
 
 # Flask-Login directs unauthorised users to this unauthorized_handler
 @login_manager.unauthorized_handler
@@ -40,19 +36,6 @@ def unauthorized():
 # if login url, show phones table only
 @app_crud.route('/login/', methods=["GET", "POST"])
 def crud_login():
-    # obtains form inputs and fulfills login requirements
-    if request.form:
-        email = request.form.get("email")
-        password = request.form.get("password")
-        if login(email, password):       # zero index [0] used as email is a tuple
-            return redirect(url_for('crud.search'))
-
-    # if not logged in, show the login page
-    return render_template("login.html")
-
-# if login url, show phones table only
-@app_crud.route('/login/', methods=["GET", "POST"])
-def crud_logout():
     # obtains form inputs and fulfills login requirements
     if request.form:
         email = request.form.get("email")
@@ -72,9 +55,10 @@ def crud_authorize():
         email = request.form.get("email")
         phone = request.form.get("phone")
         password1 = request.form.get("password1")
-        password2 = request.form.get("password1")           # password should be verified
-        if authorize(user_name, email, phone, password1):    # zero index [0] used as user_name and email are type tuple
-            return redirect(url_for('crud.crud_login'))
+        password2 = request.form.get("password2")     # password should be verified
+        if password2 == password1:
+            if authorize(user_name, email, phone, password1):    # zero index [0] used as user_name and email are type tuple
+                return redirect(url_for('crud.crud_login'))
     # show the auth user page if the above fails for some reason
     return render_template("authorize.html")
 
@@ -131,6 +115,11 @@ def delete():
             po.delete()
     return redirect(url_for('crud.crud'))
 
+# search form
+@app_crud.route('/search/')
+def search():
+    """loads form to search Users data"""
+    return render_template("search.html")
 
 # Search request and response
 @app_crud.route('/search/term/', methods=["POST"])
