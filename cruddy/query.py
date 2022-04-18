@@ -1,7 +1,8 @@
 from __init__ import login_manager, db
 from cruddy.model import Users
+from flask import url_for
 from flask_login import current_user, login_user, logout_user
-
+from werkzeug.utils import redirect
 
 # this is method called by frontend, it has been randomized between Alchemy and Native SQL for fun
 def users_all():
@@ -112,6 +113,7 @@ def authorize(name, phone, email, password):
 # logout user
 def logout():
     logout_user()  # removes login state of user from session
+    return redirect(url_for('crud'))
 
 
 # Test some queries from implementations above
